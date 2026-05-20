@@ -1,47 +1,66 @@
 import { useState } from 'react'
 import '../styles/login.css'
 import api from '../api/axios'
+import { useNavigate } from 'react-router-dom'
 
 function LoginPage() {
 
-    // GUARDA EL EMAIL
+    // NAVEGACION
+    const navigate = useNavigate()
+
+    // GUARDA EMAIL
     const [email, setEmail] = useState('')
 
-    // GUARDA EL PASSWORD
+    // GUARDA PASSWORD
     const [password, setPassword] = useState('')
 
-    // FUNCION DEL LOGIN
+    // GUARDA MENSAJE ERROR
+    const [errorMessage, setErrorMessage] = useState('')
+
+    // LOGIN
     async function handleSubmit(e) {
 
-        // EVITA RECARGAR LA PAGINA
+        // EVITA RECARGA
         e.preventDefault()
 
         try {
 
-            // ENVIA DATOS A LARAVEL
+            // LIMPIA ERROR
+            setErrorMessage('')
+
+            // PETICION A LARAVEL
             const response = await api.post('/login', {
                 email,
                 password
             })
 
-            // GUARDA TOKEN EN EL NAVEGADOR
+            // GUARDA TOKEN
             localStorage.setItem(
                 'token',
                 response.data.token
             )
 
-            // MUESTRA RESPUESTA
-            console.log(response.data)
+            // GUARDA USUARIO
+            localStorage.setItem(
+                'user',
+                JSON.stringify(response.data.user)
+            )
+
+            // REDIRECCIONA
+            navigate('/dashboard')
 
         } catch (error) {
 
-            // MUESTRA ERROR
+            // MENSAJE ERROR
+            setErrorMessage('Credenciales incorrectas')
+
             console.log(error.response.data)
 
         }
     }
 
     return (
+
         <div className="login-container">
 
             <div className="login-left">
@@ -56,24 +75,29 @@ function LoginPage() {
                     <input
                         type="email"
                         placeholder="Email"
-
-                        // VALOR DEL INPUT
                         value={email}
-
-                        // ACTUALIZA EL ESTADO
                         onChange={(e) => setEmail(e.target.value)}
                     />
 
                     <input
                         type="password"
                         placeholder="Password"
-
-                        // VALOR DEL INPUT
                         value={password}
-
-                        // ACTUALIZA EL ESTADO
                         onChange={(e) => setPassword(e.target.value)}
                     />
+
+                    {/* MENSAJE ERROR */}
+                    {
+
+                        errorMessage && (
+
+                            <p>
+                                {errorMessage}
+                            </p>
+
+                        )
+
+                    }
 
                     <button type="submit">
                         SIGN IN
